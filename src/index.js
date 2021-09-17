@@ -1,7 +1,15 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-ReactDOM.render(
-	<React.StrictMode></React.StrictMode>,
-	document.getElementById("root")
-)
+import { GlobalStyle } from "./styles"
+import { Home } from "./components"
+
+const App = () => {
+	return (
+		<>
+			<GlobalStyle />
+			<Home />
+		</>
+	)
+}
+ReactDOM.render(<App />, document.getElementById("root"))
