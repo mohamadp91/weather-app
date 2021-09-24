@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import {
 	AppBar,
 	CssBaseline,
@@ -17,11 +17,19 @@ import CloseIcon from "@material-ui/icons/CloseRounded"
 import Flag from "@material-ui/icons/FlagOutlined"
 import styled from "styled-components"
 import Countries from "all-country-data"
+import axios from "axios"
+import env from "@beam-australia/react-env"
 
 import { SearchBar } from "../searchBar"
+import { LoadingTab } from "../loading"
+import { ConnectionErrorHandling } from "../connectionState"
+import { RegionWeather } from "../regionWeather"
 
 const ContainerStyled = styled.div`
 	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
 `
 
 const PaperStyled = styled(Paper)`
@@ -54,7 +62,6 @@ const ListItemStyled = styled(ListItem)`
 	transition: transform 0.15s, color 0.3s, border 0.3s, width 0.1s;
 	background-image: linear-gradient(to right, white, #caf0f8);
 	width: 390px;
-
 	:hover {
 		transform: scale(1.09, 1.09);
 		border: 1px solid #0077b6;
@@ -62,6 +69,7 @@ const ListItemStyled = styled(ListItem)`
 		color: #01316e;
 		text-shadow: 0 0 0 #01316e;
 		width: 380px;
+		cursor: pointer;
 	}
 `
 
@@ -70,10 +78,33 @@ const TypographyCountry = styled(Typography)`
 	opacity: 80%;
 `
 
-export const Sidebar = ({ setRegionName }) => {
+const MainContainer = styled.main`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+`
+
+export const WeatherTab = () => {
 	const [open, setOpen] = useState(false)
 	const [countriesData, setCountriesData] = useState(null)
 	const [searchedCapitals, setSearchedCapitals] = useState(null)
+	const [countryName, setCountryName] = useState(null)
+	const [capitalName, setCapitalName] = useState(null)
+	const [isLoading, setIsLoading] = useState(null)
+	const [isError, setIsError] = useState(false)
+
+	useEffect(() => {
+		countryName &&
+			axios
+				.get(`${env("API_HOST")}?key=${env("API_TOKEN")}&q=${countryName}`)
+				.then((r) => {
+					setIsLoading(false)
+				})
+				.catch(() => {
+					setIsLoading(false)
+					setIsError(true)
+				})
+	}, [countryName])
 
 	const searchHandler = (value) => {
 		value = value ? value.toLowerCase() : String()
@@ -100,7 +131,6 @@ export const Sidebar = ({ setRegionName }) => {
 
 	return (
 		<ContainerStyled>
-			<CssBaseline />
 			<AppBar position="fixed" style={{ backgroundColor: "#0077b6" }}>
 				<Toolbar>
 					<IconButton
@@ -136,7 +166,9 @@ export const Sidebar = ({ setRegionName }) => {
 								<ListItemStyled
 									key={c.country}
 									onClick={() => {
-										setRegionName(c.country)
+										setCountryName(c.country)
+										setCapitalName(c.capital)
+										setIsLoading(true)
 									}}
 								>
 									<ListItemText>
@@ -153,40 +185,17 @@ export const Sidebar = ({ setRegionName }) => {
 					</List>
 				</PaperStyled>
 			</Drawer>
-			<main>
-				<div />
-				<Typography paragraph>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-					eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-					dolor purus non enim praesent elementum facilisis leo vel. Risus at
-					ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-					quisque non tellus. Convallis convallis tellus id interdum velit
-					laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-					adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-					integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-					eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-					quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-					vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-					lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-					faucibus et molestie ac.
-				</Typography>
-				<Typography paragraph>
-					Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-					ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-					elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-					sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-					mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-					risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-					purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-					tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-					morbi tristique senectus et. Adipiscing elit duis tristique
-					sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-					eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-					posuere sollicitudin aliquam ultrices sagittis orci a.
-				</Typography>
-			</main>
+			<MainContainer>
+				{isLoading ? (
+					<LoadingTab />
+				) : isError ? (
+					<ConnectionErrorHandling />
+				) : (
+					<RegionWeather country={countryName} capital={capitalName} />
+				)}
+			</MainContainer>
 		</ContainerStyled>
 	)
 }
 
-export default Sidebar
+export default WeatherTab
