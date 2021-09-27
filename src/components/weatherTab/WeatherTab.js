@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
 	AppBar,
-	CssBaseline,
 	Divider,
 	Drawer,
 	IconButton,
@@ -14,6 +13,7 @@ import {
 } from "@material-ui/core"
 import MenuIcon from "@material-ui/icons/Menu"
 import CloseIcon from "@material-ui/icons/CloseRounded"
+import HomeIcon from "@material-ui/icons/Home"
 import Flag from "@material-ui/icons/FlagOutlined"
 import styled from "styled-components"
 import Countries from "all-country-data"
@@ -24,6 +24,7 @@ import { SearchBar } from "../searchBar"
 import { LoadingTab } from "../loading"
 import { ConnectionErrorHandling } from "../connectionState"
 import { RegionWeather } from "../regionWeather"
+import HomeTab from "../home/HomeTab"
 
 const ContainerStyled = styled.div`
 	display: flex;
@@ -92,19 +93,33 @@ export const WeatherTab = () => {
 	const [capitalName, setCapitalName] = useState(null)
 	const [isLoading, setIsLoading] = useState(null)
 	const [isError, setIsError] = useState(false)
+	const [showHome, setShowHome] = useState(true)
 
 	useEffect(() => {
-		countryName &&
+		const region = capitalName ? capitalName : countryName
+		region &&
 			axios
-				.get(`${env("API_HOST")}?key=${env("API_TOKEN")}&q=${countryName}`)
+				.get(`${env("API_HOST")}?key=${env("API_TOKEN")}&q=${region}`)
 				.then((r) => {
+					console.log(r)
+					setShowHome(false)
 					setIsLoading(false)
 				})
 				.catch(() => {
 					setIsLoading(false)
 					setIsError(true)
 				})
-	}, [countryName])
+	}, [capitalName, countryName])
+
+	useEffect(() => {
+		const capitalList = Countries.countryCapitalList().filter(
+			(country) => country.capital !== null
+		)
+		searchedCapitals
+			? setCountriesData(searchedCapitals)
+			: setCountriesData(capitalList)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchedCapitals])
 
 	const searchHandler = (value) => {
 		value = value ? value.toLowerCase() : String()
@@ -119,15 +134,12 @@ export const WeatherTab = () => {
 		}
 	}
 
-	useEffect(() => {
-		const capitalList = Countries.countryCapitalList().filter(
-			(country) => country.capital !== null
-		)
-		searchedCapitals
-			? setCountriesData(searchedCapitals)
-			: setCountriesData(capitalList)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchedCapitals])
+	const onRegionClick = (region) => {
+		setCountryName(region.country)
+		setCapitalName(region.capital)
+		setShowHome(false)
+		setIsLoading(true)
+	}
 
 	return (
 		<ContainerStyled>
@@ -140,6 +152,14 @@ export const WeatherTab = () => {
 						edge="start"
 					>
 						<MenuIcon />
+					</IconButton>
+					<IconButton
+						style={{ marginLeft: "30px", marginRight: "30px" }}
+						color="inherit"
+						onClick={() => setShowHome(true)}
+						edge="start"
+					>
+						<HomeIcon />
 					</IconButton>
 					<Typography variant="h6" noWrap>
 						Weather application
@@ -165,11 +185,7 @@ export const WeatherTab = () => {
 							countriesData.map((c) => (
 								<ListItemStyled
 									key={c.country}
-									onClick={() => {
-										setCountryName(c.country)
-										setCapitalName(c.capital)
-										setIsLoading(true)
-									}}
+									onClick={() => onRegionClick(c)}
 								>
 									<ListItemText>
 										<Flag /> <TypographyCountry>{c.country}</TypographyCountry>
@@ -186,7 +202,12 @@ export const WeatherTab = () => {
 				</PaperStyled>
 			</Drawer>
 			<MainContainer>
-				{isLoading ? (
+				{showHome ? (
+					<HomeTab
+						setCountryName={setCountryName}
+						countriesData={Countries.all()}
+					/>
+				) : isLoading ? (
 					<LoadingTab />
 				) : isError ? (
 					<ConnectionErrorHandling />
