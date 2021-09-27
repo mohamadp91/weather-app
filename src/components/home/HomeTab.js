@@ -1,81 +1,84 @@
-import { Carousel } from "react-carousel-minimal"
+import React, { useEffect, useState } from "react"
+import WorldMap, { CountryContext } from "react-svg-worldmap"
 import styled from "styled-components"
-import { useCallback, useEffect, useRef, useState } from "react"
 
-const SliderContainer = styled.div`
+const WorldMapContainer = styled.div`
 	margin-top: 100px;
-	text-align: center;
-`
+	width: 1000px;
+	height: 700px;
 
-export const HomeTab = () => {
+	.worldmap__figure-caption {
+		color: #01316e;
+		font-size: 30px;
+		font-family: Sarai, serif;
+	}
+	svg {
+		margin-top: 60px;
+	}
+	path:hover {
+		background: white;
+		color: cornflowerblue;
+	}
+`
+export const HomeTab = ({ countriesData, setCountryName }) => {
 	const [data, setData] = useState([
 		{
-			image:
-				"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/GoldenGateBridge-001.jpg/1200px-GoldenGateBridge-001.jpg",
-			caption: "San Francisco",
-		},
-		{
-			image:
-				"https://cdn.britannica.com/s:800x450,c:crop/35/204435-138-2F2B745A/Time-lapse-hyper-lapse-Isle-Skye-Scotland.jpg",
-			caption: "Scotland",
-		},
-		{
-			image:
-				"https://static2.tripoto.com/media/filter/tst/img/735873/TripDocument/1537686560_1537686557954.jpg",
-			caption: "Darjeeling",
-		},
-		{
-			image:
-				"https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Palace_of_Fine_Arts_%2816794p%29.jpg/1200px-Palace_of_Fine_Arts_%2816794p%29.jpg",
-			caption: "San Francisco",
-		},
-		{
-			image:
-				"https://i.natgeofe.com/n/f7732389-a045-402c-bf39-cb4eda39e786/scotland_travel_4x3.jpg",
-			caption: "Scotland",
-		},
-		{
-			image:
-				"https://www.tusktravel.com/blog/wp-content/uploads/2020/07/Best-Time-to-Visit-Darjeeling-for-Honeymoon.jpg",
-			caption: "Darjeeling",
-		},
-		{
-			image:
-				"https://www.omm.com/~/media/images/site/locations/san_francisco_780x520px.ashx",
-			caption: "San Francisco",
-		},
-		{
-			image:
-				"https://images.ctfassets.net/bth3mlrehms2/6Ypj2Qd3m3jQk6ygmpsNAM/61d2f8cb9f939beed918971b9bc59bcd/Scotland.jpg?w=750&h=422&fl=progressive&q=50&fm=jpg",
-			caption: "Scotland",
-		},
-		{
-			image:
-				"https://www.oyorooms.com/travel-guide/wp-content/uploads/2019/02/summer-7.jpg",
-			caption: "Darjeeling",
+			country: countriesData[0].country_code,
+			value: 0,
 		},
 	])
 
-	const sliderRef = useRef(null)
+	useEffect(() => {
+		countriesData.forEach((c, index) => {
+			setData((d) => {
+				return [
+					...d,
+					{
+						country: c.country_code,
+						value: index / 10,
+					},
+				]
+			})
+		})
+	}, [])
 
-	const captionStyle = {
-		fontSize: "2em",
-		fontWeight: "bold",
-	}
-	const slideNumberStyle = {
-		fontSize: "20px",
-		fontWeight: "bold",
+	const stylingFunction = ({
+		countryValue,
+		countryCode,
+		minValue,
+		maxValue,
+		color,
+	}: CountryContext) => {
+		const opacityLevel = countryValue
+			? 0.1 + (1.5 * (countryValue - minValue)) / (maxValue - minValue)
+			: 0
+		return {
+			fill: `#68c09b`,
+			fillOpacity: opacityLevel,
+			stroke: `#18cf1e`,
+			strokeWidth: 1.5,
+			strokeOpacity: 0.5,
+			cursor: "pointer",
+		}
 	}
 
+	const onCountryClick = (event) => {
+		setData((d) => {
+			return [...d, { country: event.countryCode, value: 1000 }]
+		})
+		setCountryName(event.countryName)
+	}
 	return (
-		<SliderContainer>
-			<h2>select a region from left menu</h2>
-			<div
-				style={{
-					padding: "0 20px",
-				}}
-			></div>
-		</SliderContainer>
+		<WorldMapContainer>
+			<WorldMap
+				title="Select a country , double click on white area to zoom 😍"
+				value-suffix="people"
+				data={data}
+				onClickFunction={(e) => onCountryClick(e)}
+				styleFunction={stylingFunction}
+				richInteraction
+			/>
+		</WorldMapContainer>
 	)
 }
 
