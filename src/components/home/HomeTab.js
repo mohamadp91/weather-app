@@ -55,8 +55,8 @@ export const HomeTab = ({ countriesData, setCountryName }) => {
 		return {
 			fill: `#68c09b`,
 			fillOpacity: opacityLevel,
-			stroke: "black",
-			strokeWidth: 1,
+			stroke: `#18cf1e`,
+			strokeWidth: 1.5,
 			strokeOpacity: 0.5,
 			cursor: "pointer",
 		}

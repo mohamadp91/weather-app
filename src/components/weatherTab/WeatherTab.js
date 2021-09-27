@@ -101,14 +101,15 @@ export const WeatherTab = () => {
 			axios
 				.get(`${env("API_HOST")}?key=${env("API_TOKEN")}&q=${region}`)
 				.then((r) => {
-					console.log(r)
 					setShowHome(false)
 					setIsLoading(false)
 				})
 				.catch(() => {
+					setShowHome(false)
 					setIsLoading(false)
 					setIsError(true)
 				})
+		setOpen(false)
 	}, [capitalName, countryName])
 
 	useEffect(() => {
@@ -135,10 +136,10 @@ export const WeatherTab = () => {
 	}
 
 	const onRegionClick = (region) => {
-		setCountryName(region.country)
-		setCapitalName(region.capital)
 		setShowHome(false)
 		setIsLoading(true)
+		setCountryName(region.country)
+		setCapitalName(region.capital)
 	}
 
 	return (
