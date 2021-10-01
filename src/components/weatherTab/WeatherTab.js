@@ -94,15 +94,17 @@ export const WeatherTab = () => {
 	const [isLoading, setIsLoading] = useState(null)
 	const [isError, setIsError] = useState(false)
 	const [showHome, setShowHome] = useState(true)
+	const [weatherData, setWeatherData] = useState(null)
 
 	useEffect(() => {
-		const region = capitalName ? capitalName : countryName
+		const region = capitalName || countryName
 		region &&
 			axios
 				.get(`${env("API_HOST")}?key=${env("API_TOKEN")}&q=${region}`)
 				.then((r) => {
 					setShowHome(false)
 					setIsLoading(false)
+					setWeatherData(r.data)
 				})
 				.catch(() => {
 					setShowHome(false)
@@ -212,9 +214,15 @@ export const WeatherTab = () => {
 					<LoadingTab />
 				) : isError ? (
 					<ConnectionErrorHandling />
-				) : (
-					<RegionWeather country={countryName} capital={capitalName} />
-				)}
+				) : weatherData ? (
+					<RegionWeather
+						countryName={weatherData.location.country}
+						capital={weatherData.location.name}
+						weatherData={weatherData}
+						setCapitalName={setCapitalName}
+						setCountryName={setCountryName}
+					/>
+				) : null}
 			</MainContainer>
 		</ContainerStyled>
 	)
