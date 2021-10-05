@@ -26,6 +26,11 @@ const SearchLabelStyled = styled.p`
 	text-shadow: 0 2px 0 black;
 `
 
+const SearchIconStyled = styled(SearchIcon)`
+	color: white;
+	margin-top: 80px;
+`
+
 const TextFieldStyled = styled(TextField)`
 	width: 290px;
 	background-color: white;
@@ -50,10 +55,11 @@ export const SearchBar = ({ searchHandler }) => {
 					variant="outlined"
 					value={nullToEmpty(searchValue)}
 					onChange={({ target: { value } }) => changeHandler(value)}
+					data-test-id="search-bar"
 				/>
 			</FormControlStyled>
 			<IconButton>
-				<SearchIcon />
+				<SearchIconStyled />
 			</IconButton>
 		</TextFieldContainer>
 	)

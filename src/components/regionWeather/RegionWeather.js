@@ -114,10 +114,12 @@ export const RegionWeather = ({
 	}, [weatherData])
 
 	return (
-		<WeatherRegionContainer url={imageUrl}>
+		<WeatherRegionContainer url={imageUrl} data-test-id="weather-region">
 			<CountryInformation darkTheme={darkTheme}>
-				<Box>{countryName}</Box>
-				<Box className="capital">{capital}</Box>
+				<Box data-test-id="country">{countryName}</Box>
+				<Box data-test-id="capital" className="capital">
+					{capital}
+				</Box>
 				<Box className="localtime">{weatherData.location.localtime}</Box>
 				<WeatherInformation>
 					<IconContainer
