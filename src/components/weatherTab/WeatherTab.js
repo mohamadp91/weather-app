@@ -154,7 +154,7 @@ export const WeatherTab = () => {
 						onClick={() => setOpen(true)}
 						edge="start"
 					>
-						<MenuIcon />
+						<MenuIcon data-test-id="menu-button" />
 					</IconButton>
 					<IconButton
 						style={{ marginLeft: "30px", marginRight: "30px" }}
@@ -189,6 +189,7 @@ export const WeatherTab = () => {
 								<ListItemStyled
 									key={c.country}
 									onClick={() => onRegionClick(c)}
+									data-test-id={c.capital === "Tehran" ? "region" : null}
 								>
 									<ListItemText>
 										<Flag /> <TypographyCountry>{c.country}</TypographyCountry>
