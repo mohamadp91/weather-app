@@ -8,7 +8,11 @@ import TableCell from "@mui/material/TableCell"
 import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
-import { styled as Styled } from "@mui/material/styles"
+import {
+	styled as matrialStyled,
+	ThemeProvider,
+	createTheme,
+} from "@mui/material/styles"
 
 const WeatherRegionContainer = styled.div`
 	width: 1000px;
@@ -31,8 +35,9 @@ const CountryInformation = styled.div`
 	font-weight: bold;
 	letter-spacing: 3px;
 	word-spacing: 10px;
-	color: ${(props) => (props.darkTheme ? "black" : "#e8e8e8")};
-	text-shadow: 0 3px 2px ${(props) => (props.darkTheme ? "#b8c5d3" : "black")};
+	color: ${(props) => (props.showDarkTheme ? "black" : "#e8e8e8")};
+	text-shadow: 0 3px 2px
+		${(props) => (props.showDarkTheme ? "#b8c5d3" : "black")};
 
 	.capital {
 		font-size: 35px;
@@ -75,14 +80,25 @@ const TableContainerStyled = styled.div`
 	top: 600px;
 	width: 999px;
 `
-const StyledTableCell = Styled(TableCell)`
-	color: ${(props) => (props.darkTheme ? "black" : "#e8e8e8")};
-	text-shadow: 0 3px 2px ${(props) => (props.darkTheme ? "#b8c5d3" : "black")};
-	font-size: 20px;
-	font-family: Serif, serif;
-	font-weight: bold;
-	font-style: italic;
-`
+
+const TableCellStyled = matrialStyled(TableCell)(({ theme }) => ({
+	fontsize: "20px",
+	fontFamily: "Serif, serif",
+	fontWeight: "bold",
+	fontStyle: "italic",
+	color: theme.color,
+	textShadow: theme.textShadow,
+}))
+
+const darkTheme = createTheme({
+	color: "black",
+	textShadow: `0 0 0`,
+})
+
+const lightTheme = createTheme({
+	color: "#e8e8e8",
+	textShadow: `0 3px 2px black`,
+})
 
 export const RegionWeather = ({
 	countryName,
@@ -92,7 +108,7 @@ export const RegionWeather = ({
 	setCountryName,
 }) => {
 	const [imageUrl, setImageUrl] = useState(null)
-	const [darkTheme, setDarkTheme] = useState(false)
+	const [showDarkTheme, setShowDarkTheme] = useState(false)
 
 	useEffect(() => {
 		setCountryName(null)
@@ -101,21 +117,26 @@ export const RegionWeather = ({
 		const weatherState = weatherData.current.condition.text
 		let url = `${env("BASE_URL")}/assets/`
 		weatherData.current.is_day === 1
-			? (url += "day/") && setDarkTheme(true)
-			: (url += "night/") && setDarkTheme(false)
+			? (url += "day/") && setShowDarkTheme(true)
+			: (url += "night/") && setShowDarkTheme(false)
 
-		weatherState.includes("thunder")
-			? (url += "Thunder.jpg") && setDarkTheme(false)
-			: weatherState.includes("rain") && setDarkTheme(false)
-			? (url += "Lightrain.jpg")
-			: (url += weatherState.replace(" ", "") + ".jpg")
+		if (weatherState.includes("thunder")) {
+			url += "Thunder.jpg"
+			setShowDarkTheme(false)
+		} else if (weatherState.includes("rain")) {
+			url += "Lightrain.jpg"
+			setShowDarkTheme(false)
+		} else {
+			url += weatherState.replace(" ", "") + ".jpg"
+		}
 
+		console.log(weatherData)
 		setImageUrl(url)
 	}, [weatherData])
 
 	return (
 		<WeatherRegionContainer url={imageUrl} data-test-id="weather-region">
-			<CountryInformation darkTheme={darkTheme}>
+			<CountryInformation showDarkTheme={showDarkTheme}>
 				<Box data-test-id="country">{countryName}</Box>
 				<Box data-test-id="capital" className="capital">
 					{capital}
@@ -136,54 +157,42 @@ export const RegionWeather = ({
 				</WeatherInformation>
 			</CountryInformation>
 			<TableContainerStyled>
-				<TableContainer darkTheme={darkTheme}>
+				<TableContainer>
 					<Table aria-label="caption table">
-						<TableHead>
-							<TableRow>
-								<StyledTableCell darkTheme={darkTheme}>Cloud</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									Humidity
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									Precip&nbsp;(mm)
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									Pressure&nbsp;(mb)
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									Temp&nbsp;(c)
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>UV</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									Wind&nbsp;(kph)
-								</StyledTableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							<TableRow>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.cloud}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.humidity}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.precip_mm}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.pressure_mb}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.temp_c}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.uv}
-								</StyledTableCell>
-								<StyledTableCell darkTheme={darkTheme}>
-									{weatherData.current.wind_kph}
-								</StyledTableCell>
-							</TableRow>
-						</TableBody>
+						<ThemeProvider theme={showDarkTheme ? darkTheme : lightTheme}>
+							<TableHead>
+								<TableRow>
+									<TableCellStyled>Cloud</TableCellStyled>
+									<TableCellStyled>Humidity</TableCellStyled>
+									<TableCellStyled>Precip&nbsp;(mm)</TableCellStyled>
+									<TableCellStyled>Pressure&nbsp;(mb)</TableCellStyled>
+									<TableCellStyled>Temp&nbsp;(c)</TableCellStyled>
+									<TableCellStyled>UV</TableCellStyled>
+									<TableCellStyled>Wind&nbsp;(kph)</TableCellStyled>
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								<TableRow>
+									<TableCellStyled>{weatherData.current.cloud}</TableCellStyled>
+									<TableCellStyled>
+										{weatherData.current.humidity}
+									</TableCellStyled>
+									<TableCellStyled>
+										{weatherData.current.precip_mm}
+									</TableCellStyled>
+									<TableCellStyled>
+										{weatherData.current.pressure_mb}
+									</TableCellStyled>
+									<TableCellStyled>
+										{weatherData.current.temp_c}
+									</TableCellStyled>
+									<TableCellStyled>{weatherData.current.uv}</TableCellStyled>
+									<TableCellStyled>
+										{weatherData.current.wind_kph}
+									</TableCellStyled>
+								</TableRow>
+							</TableBody>
+						</ThemeProvider>
 					</Table>
 				</TableContainer>
 			</TableContainerStyled>
